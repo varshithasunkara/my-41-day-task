@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#6b4c8a">
+<title>My 41-Day Devotional Tracker</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  font-family: Arial, sans-serif;
+  background: #f5effb;
+  color: #30283a;
+}
+
+main {
+  max-width: 650px;
+  margin: auto;
+}
+
+header {
+  background: #6b4c8a;
+  color: white;
+  text-align: center;
+  padding: 25px 15px;
+  border-radius: 20px;
+}
+
+header h1 { font-size: 26px; }
+
+.card {
+  background: white;
+  padding: 18px;
+  margin-top: 16px;
+  border-radius: 16px;
+}
+
+#count {
+  font-weight: bold;
+  color: #6b4c8a;
+}
+
+.progress {
+  height: 12px;
+  background: #e9e0f0;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+#bar {
+  height: 100%;
+  width: 0%;
+  background: #32765b;
+  transition: width .2s;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.day {
+  min-height: 65px;
+  border: 2px solid #e2d8eb;
+  border-radius: 12px;
+  background: white;
+  color: #30283a;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.day small {
+  display: block;
+  font-size: 11px;
+  margin-top: 5px;
+}
+
+.day.done {
+  background: #dff3e6;
+  border-color: #32765b;
+  color: #205d42;
+}
+
+.action {
+  padding: 12px;
+  margin: 12px 5px 0 0;
+  border: none;
+  border-radius: 10px;
+  background: #eee6f5;
+  color: #46315f;
+  cursor: pointer;
+}
+
+footer {
+  text-align: center;
+  color: #746b7d;
+  padding: 20px 0;
+}
+
+@media (min-width: 520px) {
+  .grid { grid-template-columns: repeat(7, 1fr); }
+}
+</style>
+</head>
+
+<body>
+<main>
+
+<header>
+  <div style="font-size:32px">🙏 ✦ 🙏</div>
+  <h1>My 41-Day Devotional Journey</h1>
+  <p>One day at a time. One step in faith.</p>
+  <i>"Be still, and know..." — Psalm 46:10</i>
+</header>
+
+<section class="card">
+  <h3>Your Progress</h3>
+  <p id="count">0 / 41 days completed</p>
+  <div class="progress">
+    <div id="bar"></div>
+  </div>
+  <p id="message">Begin your journey today!</p>
+</section>
+
+<section class="card">
+  <h3>Mark each day completed</h3>
+  <div class="grid" id="grid"></div>
+  <button class="action" onclick="resetProgress()">
+    Reset progress
+  </button>
+</section>
+
+<footer>
+  41 days of faith, prayer and devotion ❤️
+</footer>
+
+</main>
+
+<script>
+const STORAGE_KEY = "my41DayDevotionalProgress";
+let completed = new Set();
+
+try {
+  const saved = JSON.parse(
+    localStorage.getItem(STORAGE_KEY) || "[]"
+  );
+
+  if (Array.isArray(saved)) {
+    completed = new Set(
+      saved.filter(n =>
+        Number.isInteger(n) && n >= 1 && n <= 41
+      )
+    );
+  }
+} catch (error) {}
+
+const grid = document.getElementById("grid");
+
+for (let day = 1; day <= 41; day++) {
+  const button = document.createElement("button");
+  button.className = "day";
+  button.innerHTML = `${day}<small></small>`;
+
+  button.onclick = () => {
+    if (completed.has(day)) {
+      completed.delete(day);
+    } else {
+      completed.add(day);
+    }
+    update();
+  };
+
+  grid.appendChild(button);
+}
+
+function update() {
+  const total = completed.size;
+
+  document.getElementById("count").textContent =
+    `${total} / 41 days completed`;
+
+  document.getElementById("bar").style.width =
+    `${total / 41 * 100}%`;
+
+  document.getElementById("message").textContent =
+    total === 41
+      ? "Congratulations! All 41 days completed! 🙏"
+      : total === 0
+        ? "Begin your journey today!"
+        : `${41 - total} days remaining. Keep going!`;
+
+  [...grid.children].forEach((button, index) => {
+    const done = completed.has(index + 1);
+    button.classList.toggle("done", done);
+    button.querySelector("small").textContent =
+      done ? "✓ Done" : "Not yet";
+    button.setAttribute("aria-pressed", String(done));
+  });
+
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify([...completed])
+    );
+  } catch (error) {}
+}
+
+function resetProgress() {
+  if (confirm("Clear all completed days?")) {
+    completed.clear();
+    update();
+  }
+}
+
+update();
+</script>
+
+</body>
+</html>
